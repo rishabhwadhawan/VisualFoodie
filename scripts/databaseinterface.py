@@ -1,7 +1,5 @@
 import json
-import requests
-from lxml import html
-import re
+
 import psycopg2
 
 dbname = "yelp"
@@ -24,7 +22,19 @@ def delete_table(tablename, openconnection):
     conn.commit()
     conn.close()
 
-def insert(business_id,user_id,rating, openconnection):
+def insertintousers(userid,name,index,openconnection):
+    conn = openconnection
+    cur = conn.cursor()
+    cur.execute("INSERT INTO users VALUES (%s, %s, %s)",(userid,name,index,))
+    conn.commit()
+
+def insertintorestaurants(business_id,index,city,review_count,name,openrest,address,state,stars,lat,long,categories,schools, openconnection):
+    conn = openconnection
+    cur = conn.cursor()
+    cur.execute("INSERT INTO restaurants VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",(business_id,index,city,review_count,name,openrest,address,state,stars,lat,long,categories,schools,))
+    conn.commit()
+
+def insertintoratings(business_id,user_id,rating, openconnection):
     conn = openconnection
     cur = conn.cursor()
     cur.execute("INSERT INTO user_restaurant_ratings VALUES (%s, %s, %s)",(business_id,user_id,rating,))
@@ -50,7 +60,7 @@ def enter_users():
             continue
         print (userid)
         print index
-        insert(userid,name,index,conn)
+        insertintousers(userid,name,index,conn)
         index += 1
 
     conn.close()
@@ -79,7 +89,7 @@ def enter_rest():
         categories = str(rest["categories"])
         schools = str(rest["schools"])
 
-        insert(business_id,index,city,review_count,name,openrest,address,state,stars,lat,long,categories,schools,conn)
+        insertintorestaurants(business_id,index,city,review_count,name,openrest,address,state,stars,lat,long,categories,schools,conn)
 
         index += 1
 
@@ -121,10 +131,11 @@ def enter_ratings():
                 restindex = int(rest[1])
                 break
 
-        insert(restindex,userindex,rating,conn)
+        insertintoratings(restindex,userindex,rating,conn)
 
     conn.close()
 
 if __name__ == '__main__':
-
-    enter_ratings()
+    #enter_users()
+    #enter_rest()
+    #enter_ratings()
